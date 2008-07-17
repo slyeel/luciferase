@@ -96,15 +96,16 @@ sub collateInfo {
   my @collation;
 
   # put in the titles of the columns
-  push @collation, ["Plate #", "Well", "Gene Name", "Gene ID", "Accession",
-                    "GI Number", keys %intensities_matrix];
+  push @collation, ["Barcode", "Plate #", "Well", "Gene Name", "Gene ID", 
+                    "Accession", "GI Number", keys %intensities_matrix];
 
   for (my $libi = 0; $libi < @library; $libi++) {
     my %_lib_row = %{$library[$libi]};
 
     # create a temporary array to put the row data in
     #  - start with library information
-    my @_tmp = ($_lib_row{'plate'},
+    my @_tmp = ($_lib_row{'barcode'},
+                $_lib_row{'plate'},
                 $_lib_row{'well'},
                 $_lib_row{'name'},
                 $_lib_row{'id'},
@@ -182,30 +183,36 @@ sub loadLibrary {
   my $_last_well = "";
 
   for (my $row = $src_sheet->{MinRow}; $row <= $src_sheet->{MaxRow}; $row++) {
-    next unless (defined $src_sheet->{Cells}[$row][0] &&  # move on if a blank row
-      $src_sheet->{Cells}[$row][0]->Value =~ /^Plate \d+/);  # or the row doesn't begin with 'Plate n'
-    next if ($src_sheet->{Cells}[$row][1]->Value eq $_last_well);
+    next unless (defined $src_sheet->{Cells}[$row][2] &&  # move on if a blank row
+      $src_sheet->{Cells}[$row][2]->Value =~ /^Plate \d+/);  # or the row doesn't begin with 'Plate n'
+    next if ($src_sheet->{Cells}[$row][3]->Value eq $_last_well);
 
     my %rowinfo = ();
 
     # get plate information
-    $rowinfo{'plate'} = $src_sheet->{Cells}[$row][0]->Value;  # plate number
+    $rowinfo{'plate'} = $src_sheet->{Cells}[$row][2]->Value;  # plate number
     $rowinfo{'plate'} =~ s/^Plate //;  # tidy up the plate number
 
     # get row information
-    $rowinfo{'well'}  = $src_sheet->{Cells}[$row][1]->Value;  # get the well location
+    $rowinfo{'well'}  = $src_sheet->{Cells}[$row][3]->Value;  # get the well location
     $_last_well = $rowinfo{'well'};
     # identify the components of the well location
-    my $_well = $src_sheet->{Cells}[$row][1]->Value;
+    my $_well = $src_sheet->{Cells}[$row][3]->Value;
     $_well =~ /([A-Z])(\d+)/;
     $rowinfo{'wellr'} = ord($1) - 65;
     $rowinfo{'wellc'} = $2 - 1;
 
+    # get the barcode
+    $rowinfo{'barcode'} = $src_sheet->{Cells}[$row][1]->Value;  # the barcode
     # get gene information
-    $rowinfo{'name'} = $src_sheet->{Cells}[$row][4]->Value;  # the gene name
-    $rowinfo{'id'}   = $src_sheet->{Cells}[$row][5]->Value;  # the gene id
-    $rowinfo{'acc'}  = $src_sheet->{Cells}[$row][6]->Value;  # the gene accession
-    $rowinfo{'gi'}   = $src_sheet->{Cells}[$row][7]->Value;  # the gi number
+    $rowinfo{'name'} = $src_sheet->{Cells}[$row][6]->Value  # the gene name
+      if($src_sheet->{Cells}[$row][6]);
+    $rowinfo{'id'}   = $src_sheet->{Cells}[$row][7]->Value  # the gene id
+      if($src_sheet->{Cells}[$row][7]);
+    $rowinfo{'acc'}  = $src_sheet->{Cells}[$row][8]->Value  # the gene accession
+      if($src_sheet->{Cells}[$row][8]);
+    $rowinfo{'gi'}   = $src_sheet->{Cells}[$row][9]->Value  # the gi number
+      if($src_sheet->{Cells}[$row][9]);
 
     # store the row information
     push @library, \%rowinfo;
