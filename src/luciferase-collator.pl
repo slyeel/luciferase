@@ -7,6 +7,9 @@
 #   RNAi kit.
 # author:  Julian Selley <j.selley@manchester.ac.uk>
 # created: 29-May-2008
+# example: src/luciferase-collator.pl -i data/intensity-Elk-Vp16.xls \
+#            -l data/library-haslam\(sharrocks\)/mouse\ protein\ kinases.xls \
+#            -o data/collation-haslam\(sharrocks\)/mouse\ protein\ kinases.xls
 #
 
 # Example of handling Excel spreadsheets pieced together from examples on:
